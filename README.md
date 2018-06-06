@@ -4,7 +4,8 @@
 similar to MS Office and the Windows 10 Mail app.**
 
 
-![Preview GIF](images/preview.gif)
+![Preview #0 GIF](images/preview0.gif)
+![Preview #1 GIF](images/preview1.gif)
 
 (Just ignore the typo :P)
 
