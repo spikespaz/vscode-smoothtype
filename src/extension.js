@@ -1,195 +1,168 @@
-var vscode = require("vscode");
-var fs = require("fs");
-var path = require("path");
-var events = require("events");
-var msg = require("./messages").messages;
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-
-var fileUrl = require("file-url");
+let vscode = require("vscode");
+let fs = require("fs");
+let path = require("path");
+let events = require("events");
+let msg = require("./messages").messages;
 
 function activate(context) {
-	console.log("SmoothType is active!");
+    process.on("uncaughtException", (error) => {
+        if (/ENOENT|EACCES|EPERM/.test(error.code)) {
+            vscode.window.showInformationMessage(msg.needAdministrator);
+            return;
+        }
+    });
 
-	process.on("uncaughtException", function (err) {
-		if (/ENOENT|EACCES|EPERM/.test(err.code)) {
-			vscode.window.showInformationMessage(msg.admin);
-			return;
-		}
-	});
+    let eventEmitter = new events.EventEmitter();
+    let isWindows = /^win/.test(process.platform);
+    let appDirectory = path.dirname(require.main.filename);
 
-	var eventEmitter = new events.EventEmitter();
-	var isWin = /^win/.test(process.platform);
-	var appDir = path.dirname(require.main.filename);
+    let base = appDirectory + (isWindows ? "\\vs\\workbench" : "/vs/workbench");
 
-	var base = appDir + (isWin ? "\\vs\\workbench" : "/vs/workbench");
+    let htmlFile = base + (isWindows ? "\\electron-browser\\bootstrap\\index.html" : "/electron-browser/bootstrap/index.html");
+    let htmlFileBackup = base + (isWindows ? "\\electron-browser\\bootstrap\\index.html.bak-smoothtype" : "/electron-browser/bootstrap/index.bak-smoothtype");
 
-	var htmlFile = base + (isWin ? "\\electron-browser\\bootstrap\\index.html" : "/electron-browser/bootstrap/index.html");
-	var htmlFileBack = base + (isWin ? "\\electron-browser\\bootstrap\\index.html.bak-smoothtype" : "/electron-browser/bootstrap/index.bak-smoothtype");
+    function replaceCSS() {
+        let config = vscode.workspace.getConfiguration("smoothtype");
 
-	function httpGet(theUrl) {
-		var xmlHttp = null;
+        console.log(config);
 
-		xmlHttp = new XMLHttpRequest();
-		xmlHttp.open("GET", theUrl, false);
-		xmlHttp.send(null);
-		return xmlHttp.responseText;
-	}
+        if (!config || !config.duration) {
+            vscode.window.showInformationMessage(msg.notConfigured);
+            console.log(msg.notConfigured);
+            disableAnimation();
+            return;
+        }
 
-	function replaceCss() {
-		var config = vscode.workspace.getConfiguration("vscode_smoothtype");
-		console.log(config);
-		if (!config || !config.duration) {
-			vscode.window.showInformationMessage(msg.notconfigured);
-			console.log(msg.notconfigured);
-			fUninstall();
-			return;
-		};
-		var injectHTML = "<style> .cursor { transition: all " + config.duration + "ms; } </style>";
-		try {
-			var html = fs.readFileSync(htmlFile, "utf-8");
-			html = html.replace(/<!-- !! SmoothType CSS Start !! -->[\s\S]*?<!-- !! SmoothType CSS End !! -->/, "");
+        let injectHTML = "<style> .cursor { transition: all " + config.duration + "ms; } </style>";
 
-			if (config.policy) {
-				html = html.replace(/<meta.*http-equiv="Content-Security-Policy".*>/, "");
-			}
+        try {
+            let html = fs.readFileSync(htmlFile, "utf-8");
 
-			html = html.replace(/(<\/html>)/,
-				"<!-- !! SmoothType CSS Start !! -->" + injectHTML + "<!-- !! SmoothType CSS End !! --></html>");
-			fs.writeFileSync(htmlFile, html, "utf-8");
-			enabledRestart();
-		} catch (e) {
-			console.log(e);
-		}
-	}
+            html = html.replace(/<!-- !! SmoothType CSS Start !! -->[\s\S]*?<!-- !! SmoothType CSS End !! -->/, "");
 
-	function timeDiff(d1, d2) {
-		var timeDiff = Math.abs(d2.getTime() - d1.getTime());
-		return timeDiff;
-	}
+            if (config.policy) {
+                html = html.replace(/<meta.*http-equiv="Content-Security-Policy".*>/, "");
+            }
 
-	function hasBeenUpdated(stats1, stats2) {
-		var dbak = new Date(stats1.ctime);
-		var dor = new Date(stats2.ctime);
-		var segs = timeDiff(dbak, dor) / 1000;
-		return segs > 60;
-	}
+            html = html.replace(/(<\/html>)/,
+                "<!-- !! SmoothType CSS Start !! -->" + injectHTML + "<!-- !! SmoothType CSS End !! --></html>");
+            fs.writeFileSync(htmlFile, html, "utf-8");
+            enabledRestart();
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
-	function cleanCssInstall() {
-		var c = fs.createReadStream(htmlFile).pipe(fs.createWriteStream(htmlFileBack));
-		c.on("finish", function () {
-			replaceCss();
-		});
-	}
+    function getTimeDiff(d1, d2) {
+        let timeDiff = Math.abs(d2.getTime() - d1.getTime());
+        return timeDiff;
+    }
 
-	function installItem(bakfile, orfile, cleanInstallFunc) {
-		fs.stat(bakfile, function (errBak, statsBak) {
-			if (errBak) {
-				// clean installation
-				cleanInstallFunc();
-			} else {
-				// check htmlFileBack"s timestamp and compare it to the htmlFile"s.
-				fs.stat(orfile, function (errOr, statsOr) {
-					if (errOr) {
-						vscode.window.showInformationMessage(msg.smthingwrong + errOr);
-					} else {
-						var updated = hasBeenUpdated(statsBak, statsOr);
-						if (updated) {
-							// some update has occurred. clean install
-							cleanInstallFunc();
-						}
-					}
-				});
-			}
-		});
-	}
+    function hasBeenUpdated(stats1, stats2) {
+        let dbak = new Date(stats1.ctime);
+        let dor = new Date(stats2.ctime);
+        let segs = getTimeDiff(dbak, dor) / 1000;
+        return segs > 60;
+    }
 
-	function emitEndUninstall() {
-		eventEmitter.emit("endUninstall");
-	}
+    function injectCSS() {
+        let c = fs.createReadStream(htmlFile).pipe(fs.createWriteStream(htmlFileBackup));
+        c.on("finish", replaceCSS);
+    }
 
-	function restoredAction(isRestored, willReinstall) {
-		if (isRestored >= 1) {
-			if (willReinstall) {
-				emitEndUninstall();
-			} else {
-				disabledRestart();
-			}
-		}
-	}
+    function installItem(backupFile, originalFile, installer) {
+        fs.stat(backupFile, (errBak, backupStats) => {
+            if (errBak) {
+                // clean installation
+                installer();
+            } else {
+                // check htmlFileBack"s timestamp and compare it to the htmlFile"s.
+                fs.stat(originalFile, (error, originalStats) => {
+                    if (error) vscode.window.showInformationMessage(msg.unknownError + error);
+                    else {
+                        let updated = hasBeenUpdated(backupStats, originalStats);
+                        if (updated) installer();
+                    }
+                });
+            }
+        });
+    }
 
-	function restoreBak(willReinstall) {
-		var restore = 0;
-		fs.unlink(htmlFile, function (err) {
-			if (err) {
-				vscode.window.showInformationMessage(msg.admin);
-				return;
-			}
-			var c = fs.createReadStream(htmlFileBack).pipe(fs.createWriteStream(htmlFile));
-			c.on("finish", function () {
-				fs.unlink(htmlFileBack);
-				restore++;
-				restoredAction(restore, willReinstall);
-			});
-		});
-	}
+    function emitEndUninstall() {
+        eventEmitter.emit("endUninstall");
+    }
 
-	function reloadWindow() {
-		// reload vscode-window
-		vscode.commands.executeCommand("workbench.action.reloadWindow");
-	}
+    function restoredAction(restored, reinstall) {
+        if (restored >= 1) {
+            if (reinstall) emitEndUninstall();
+            else disabledRestart();
+        }
+    }
 
-	function enabledRestart() {
-		vscode.window.showInformationMessage(msg.enabled, { title: msg.restartIde })
-			.then(function (msg) {
-				reloadWindow();
-			});
-	}
-	function disabledRestart() {
-		vscode.window.showInformationMessage(msg.disabled, { title: msg.restartIde })
-			.then(function (msg) {
-				reloadWindow();
-			});
-	}
+    function restoreBackup(reinstall) {
+        let restore = 0;
 
-	// ####  main commands ######################################################
+        fs.unlink(htmlFile, (err) => {
+            if (err) {
+                vscode.window.showInformationMessage(msg.needAdministrator);
+                return;
+            }
 
-	function fInstall() {
-		installItem(htmlFileBack, htmlFile, cleanCssInstall);
-	}
+            let writer = fs.createReadStream(htmlFileBackup).pipe(fs.createWriteStream(htmlFile));
 
-	function fUninstall(willReinstall) {
-		fs.stat(htmlFileBack, function (errBak, statsBak) {
-			if (errBak) {
-				if (willReinstall) {
-					emitEndUninstall();
-				}
-				return;
-			}
-			fs.stat(htmlFile, function (errOr, statsOr) {
-				if (errOr) {
-					vscode.window.showInformationMessage(msg.smthingwrong + errOr);
-				} else {
-					restoreBak(willReinstall);
-				}
-			});
-		});
-	}
+            writer.on("finish", () => {
+                fs.unlink(htmlFileBackup);
+                restore++;
+                restoredAction(restore, reinstall);
+            });
+        });
+    }
 
-	function fUpdate() {
-		eventEmitter.once("endUninstall", fInstall);
-		fUninstall(true);
-	}
+    function reloadWindow() {
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
+    }
 
-	var installCustomCSS = vscode.commands.registerCommand("extension.enableAnimation", fInstall);
-	var uninstallCustomCSS = vscode.commands.registerCommand("extension.disableAnimation", fUninstall);
-	var updateCustomCSS = vscode.commands.registerCommand("extension.reloadAnimation", fUpdate);
+    function enabledRestart() {
+        vscode.window.showInformationMessage(msg.enabled, { title: msg.restartIde }).then(reloadWindow);
+    }
+    function disabledRestart() {
+        vscode.window.showInformationMessage(msg.disabled, { title: msg.restartIde }).then(reloadWindow);
+    }
 
-	context.subscriptions.push(installCustomCSS);
-	context.subscriptions.push(uninstallCustomCSS);
-	context.subscriptions.push(updateCustomCSS);
+    function enableAnimation() {
+        installItem(htmlFileBackup, htmlFile, injectCSS);
+    }
+
+    function disableAnimation(reinstall) {
+        fs.stat(htmlFileBackup, (error) => {
+            if (error) {
+                if (reinstall) emitEndUninstall();
+                return;
+            }
+            fs.stat(htmlFile, (error) => {
+                if (error) vscode.window.showInformationMessage(msg.unknownError + error);
+                else restoreBackup(reinstall);
+            });
+        });
+    }
+
+    function updateAnimation() {
+        eventEmitter.once("endUninstall", enableAnimation);
+        disableAnimation(true);
+    }
+
+    let installCustomCSS = vscode.commands.registerCommand("extension.enableAnimation", enableAnimation);
+    let uninstallCustomCSS = vscode.commands.registerCommand("extension.disableAnimation", disableAnimation);
+    let updateCustomCSS = vscode.commands.registerCommand("extension.reloadAnimation", updateAnimation);
+
+    context.subscriptions.push(installCustomCSS);
+    context.subscriptions.push(uninstallCustomCSS);
+    context.subscriptions.push(updateCustomCSS);
+
+    console.log("SmoothType is active!");
 }
+
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
-function deactivate() { }
-exports.deactivate = deactivate;
+exports.deactivate = () => vscode.commands.executeCommand("extension.disableAnimation");
