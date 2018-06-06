@@ -1,13 +1,13 @@
 {
-  "name": "vscode-custom-css",
-  "displayName": "Custom CSS and JS Loader",
-  "description": "Custom CSS and JS for Visual Studio Code",
-  "version": "2.7.1",
-  "publisher": "be5invis",
+  "name": "vscode-smoothtype",
+  "displayName": "Smooth Type",
+  "description": "Extension to modify Visual Studio Code to aallow for A smooth cursor animation while typing.",
+  "version": "0.1.0",
+  "publisher": "spikespaz",
   "author": {
-    "email": "belleve@typeof.net",
-    "name": "Belleve Invis",
-    "url": "https://typeof.net"
+    "email": "spikespaz@outlook.com",
+    "name": "Jacob Birkett (spikespaz)",
+    "url": "https://spikespaz.com"
   },
   "engines": {
     "vscode": "^1.9.1"
@@ -28,35 +28,30 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.installCustomCSS",
-        "title": "Enable Custom CSS and JS"
+        "command": "extension.enableAnimation",
+        "title": "Enable Smooth Typing"
       },
       {
-        "command": "extension.uninstallCustomCSS",
-        "title": "Disable Custom CSS and JS"
+        "command": "extension.disableAnimation",
+        "title": "Disable Smooth Typing"
       },
       {
-        "command": "extension.updateCustomCSS",
-        "title": "Reload Custom CSS and JS"
+        "command": "extension.reloadAnimation",
+        "title": "Reload Smooth Typing"
       }
     ],
     "configuration": {
-      "title": "Custom CSS/JS Configuration",
+      "title": "Smooth Type",
       "properties": {
-        "vscode_custom_css.imports": {
-          "description": "Custom CSS/JS files, as an array of URLs, not file paths",
-          "type": "array",
-          "default": []
-        },
-        "vscode_custom_css.statusbar": {
-          "description": "Enable Status Indicator",
-          "type": "boolean",
-          "default": true
-        },
-        "vscode_custom_css.policy": {
-          "description": "Disable vscode Content Policy (required if loading from URL)",
+        "vscode_smoothtype.policy": {
+          "description": "Disable VSCode Content Policy (required if loading from URL)",
           "type": "boolean",
           "default": false
+        },
+        "vscode_smoothtype.duration": {
+          "description": "Durration in milliseconds for the cursor to travel from one character position (or line) to the next.",
+          "type": "number",
+          "default": 80
         }
       }
     }
@@ -67,8 +62,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "__metadata": {
-    "id": "1b160753-ae5e-42bb-82ad-d115ce5c10f4",
-    "publisherDisplayName": "be5invis",
-    "publisherId": "8c148d69-cbc6-480b-bd8b-a42715926324"
+    "id": null,
+    "publisherDisplayName": "spikespaz",
+    "publisherId": null
   }
 }
