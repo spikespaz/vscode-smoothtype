@@ -11,6 +11,7 @@
     },
     "sourceType": "module"
   },
+  "extends": "eslint:recommended",
   "rules": {
     "no-const-assign": "warn",
     "no-this-before-super": "warn",
@@ -18,6 +19,23 @@
     "no-unreachable": "warn",
     "no-unused-vars": "warn",
     "constructor-super": "warn",
-    "valid-typeof": "warn"
+    "valid-typeof": "warn",
+    "indent": [
+      "error",
+      4
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-console": "off"
   }
 }
