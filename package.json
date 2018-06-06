@@ -1,8 +1,13 @@
 {
   "name": "vscode-smoothtype",
   "displayName": "Smooth Type",
-  "description": "Extension to modify Visual Studio Code to aallow for A smooth cursor animation while typing.",
+  "description": "Extension to modify Visual Studio Code to allow for a smooth cursor animation while typing.",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spikespaz/vscode-smoothtype"
+  },
   "publisher": "spikespaz",
   "author": {
     "email": "spikespaz@outlook.com",
@@ -44,7 +49,7 @@
       "title": "Smooth Type",
       "properties": {
         "vscode_smoothtype.policy": {
-          "description": "Disable VSCode Content Policy (required if loading from URL)",
+          "description": "Disable VSCode Content Policy.",
           "type": "boolean",
           "default": false
         },
@@ -56,14 +61,18 @@
       }
     }
   },
-  "devDependencies": {},
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "devDependencies": {
+    "typescript": "^2.6.1",
+    "vscode": "^1.1.6",
+    "eslint": "^4.11.0",
+    "@types/node": "^7.0.43",
+    "@types/mocha": "^2.2.42"
+  },
   "dependencies": {
     "file-url": "^2.0.2",
     "xmlhttprequest": "^1.8.0"
-  },
-  "__metadata": {
-    "id": null,
-    "publisherDisplayName": "spikespaz",
-    "publisherId": null
   }
 }
