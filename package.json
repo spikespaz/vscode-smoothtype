@@ -14,6 +14,7 @@
     "type": "git",
     "url": "https://github.com/spikespaz/vscode-smoothtype"
   },
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.9.1"
   },
