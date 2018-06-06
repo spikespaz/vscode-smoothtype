@@ -23,33 +23,23 @@ function activate(context) {
 
     function replaceCSS() {
         let config = vscode.workspace.getConfiguration("smoothtype");
-
-        console.log(config);
-
-        if (!config || !config.duration) {
-            vscode.window.showInformationMessage(msg.notConfigured);
-            console.log(msg.notConfigured);
-            disableAnimation();
-            return;
-        }
-
         let injectHTML = "<style> .cursor { transition: all " + config.duration + "ms; } </style>";
 
         try {
             let html = fs.readFileSync(htmlFile, "utf-8");
 
-            html = html.replace(/<!-- !! SmoothType CSS Start !! -->[\s\S]*?<!-- !! SmoothType CSS End !! -->/, "");
+            html = html.replace(/<!-- \[Begin Injected CSS] -->[\s\S]*?<!-- \[End Injected CSS] -->/, "");
 
-            if (config.policy) {
+            if (config.policy)
                 html = html.replace(/<meta.*http-equiv="Content-Security-Policy".*>/, "");
-            }
 
             html = html.replace(/(<\/html>)/,
-                "<!-- !! SmoothType CSS Start !! -->" + injectHTML + "<!-- !! SmoothType CSS End !! --></html>");
+                "<!-- [Begin Injected CSS] -->" + injectHTML + "<!-- [End Injected CSS] --></html>");
+
             fs.writeFileSync(htmlFile, html, "utf-8");
             enabledRestart();
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -59,24 +49,21 @@ function activate(context) {
     }
 
     function hasBeenUpdated(stats1, stats2) {
-        let dbak = new Date(stats1.ctime);
-        let dor = new Date(stats2.ctime);
-        let segs = getTimeDiff(dbak, dor) / 1000;
+        let dbackup = new Date(stats1.ctime);
+        let doriginal = new Date(stats2.ctime);
+        let segs = getTimeDiff(dbackup, doriginal) / 1000;
         return segs > 60;
     }
 
     function injectCSS() {
-        let c = fs.createReadStream(htmlFile).pipe(fs.createWriteStream(htmlFileBackup));
-        c.on("finish", replaceCSS);
+        let writer = fs.createReadStream(htmlFile).pipe(fs.createWriteStream(htmlFileBackup));
+        writer.on("finish", replaceCSS);
     }
 
     function installItem(backupFile, originalFile, installer) {
-        fs.stat(backupFile, (errBak, backupStats) => {
-            if (errBak) {
-                // clean installation
-                installer();
-            } else {
-                // check htmlFileBack"s timestamp and compare it to the htmlFile"s.
+        fs.stat(backupFile, (backupError, backupStats) => {
+            if (backupError) installer();
+            else {
                 fs.stat(originalFile, (error, originalStats) => {
                     if (error) vscode.window.showInformationMessage(msg.unknownError + error);
                     else {
@@ -163,6 +150,4 @@ function activate(context) {
 }
 
 exports.activate = activate;
-
-// this method is called when your extension is deactivated
 exports.deactivate = () => vscode.commands.executeCommand("extension.disableAnimation");
