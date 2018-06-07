@@ -8,9 +8,8 @@ const messages = {
     disabled: "Smooth Typing has been disabled. Please restart the window.",
     alreadyEnabled: "Smooth Typing is already enabled.",
     alreadyDisabled: "Smooth Typing is not enabled.",
-    enableFailed: "Enabling Smooth Typing failed. Check the debug console for details.",
-    disableFailed: "Disabling Smooth Typing failed. Check the debug console for details.",
-    needsAdmin: "VS Code needs to be started with Administrator permissions to enable Smooth Typing.",
+    enableFailed: "Enabling Smooth Typing failed. Make sure that VS Code is running as Administrator.",
+    disableFailed: "Disabling Smooth Typing failed. Make sure that VS Code is running as Administrator.",
 };
 
 // Paths and directoies to VS Code itself.
@@ -32,54 +31,37 @@ const injectionPattern = new RegExp("\\s*" + beginComment + "(?:.|\\s)*" + endCo
 
 // Function to reload the window, asks and displays a message if "message" is provided.
 function reloadWindow(message = null) {
-    if (message === null)
-        vscode.window.showInformationMessage(message, {
-            title: "Reload Window"
-        }).then(reloadWindow);
-    else
+    if (message === null || message === false)
         vscode.commands.executeCommand("workbench.action.reloadWindow");
+    else vscode.window.showInformationMessage(message, {
+        title: "Reload Window"
+    }).then(clicked => {
+        if (clicked !== undefined) reloadWindow();
+    });
 }
 
 // Injects the template string into the VS Code index file, and returns true if successful.
 function injectCursorStyle(duration) {
-    try {
-        let indexHTML = fs.readFileSync(indexPath, "utf-8");
-        indexHTML = indexHTML.replace("</head>",
-            injectionTemplate.replace("{duration}", duration) + "\n\t</head>"
-        );
+    let indexHTML = fs.readFileSync(indexPath, "utf-8");
+    indexHTML = indexHTML.replace("</head>",
+        injectionTemplate.replace("{duration}", duration) + "\n\t</head>"
+    );
 
-        fs.writeFileSync(indexPath, indexHTML, "utf-8");
-
-        return true;
-    } catch (error) {
-        console.warn(error);
-        return false;
-    }
+    fs.writeFileSync(indexPath, indexHTML, "utf-8");
 }
 
 // Uses "injectionPattern" to remove the injected template from the index file.
 function removeCursorStyle() {
-    try {
-        let indexHTML = fs.readFileSync(indexPath, "utf-8");
-        indexHTML = indexHTML.replace(injectionPattern, "");
+    let indexHTML = fs.readFileSync(indexPath, "utf-8");
+    indexHTML = indexHTML.replace(injectionPattern, "");
 
-        fs.writeFileSync(indexPath, indexHTML, "utf-8");
-
-        return true;
-    } catch (error) {
-        console.warn(error);
-        return false;
-    }
+    fs.writeFileSync(indexPath, indexHTML, "utf-8");
 }
 
 // Checks if the "injectionPattern" is present in the index file.
 function checkInjection() {
-    try {
-        let indexHTML = fs.readFileSync(indexPath, "utf-8");
-        return injectionPattern.test(indexHTML);
-    } catch (error) {
-        console.warn(error);
-    }
+    let indexHTML = fs.readFileSync(indexPath, "utf-8");
+    return injectionPattern.test(indexHTML);
 }
 
 // Command to enable Smooth Typing by injecting code into the index file.
@@ -90,10 +72,14 @@ function enableAnimation(check = true) {
     }
 
     let config = vscode.workspace.getConfiguration("smoothtype");
-    let success = injectCursorStyle(config.duration);
 
-    if (success) reloadWindow(config.autoReload ? null : messages.enabled);
-    else vscode.window.showErrorMessage(messages.enableFailed);
+    try {
+        injectCursorStyle(config.duration);
+        reloadWindow(config.autoReload ? null : messages.enabled);
+    } catch (error) {
+        console.warn(error);
+        vscode.window.showWarningMessage(messages.enableFailed);
+    }
 }
 
 // Command to reverse "enableAnimation".
@@ -104,10 +90,14 @@ function disableAnimation(check = true) {
     }
 
     let config = vscode.workspace.getConfiguration("smoothtype");
-    let success = removeCursorStyle();
 
-    if (success) reloadWindow(config.autoReload ? null : messages.disabled);
-    else vscode.window.showErrorMessage(messages.disableFailed);
+    try {
+        removeCursorStyle();
+        reloadWindow(config.autoReload ? null : messages.disabled);
+    } catch (error) {
+        console.warn(error);
+        vscode.window.showWarningMessage(messages.disableFailed);
+    }
 }
 
 // Disable and re-enable Smooth Typing, useful for after VS Code updates.
@@ -116,16 +106,8 @@ function reloadAnimation(check = false) {
     enableAnimation(check);
 }
 
+// Subscribe all of the command functions to the corresponding contributions.
 function activate(context) {
-    // On uncaught permission exceptions, display a warning to the user that they need admin rights.
-    process.on("uncaughtException", error => {
-        if (/ENOENT|EACCESS|EPERM/.test(error.code)) {
-            vscode.window.showInformationMessage(messages.needsAdmin);
-            return;
-        }
-    });
-
-    // Subscribe all of the command functions to the corresponding contributions.
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
