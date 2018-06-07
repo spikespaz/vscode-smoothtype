@@ -1,7 +1,6 @@
 let vscode = require("vscode");
 let fs = require("fs");
 let path = require("path");
-let events = require("events");
 
 const messages = {
     enabled: "Smooth Typing has been enabled. Please restart the window.",
@@ -16,18 +15,20 @@ const messages = {
 const appDirectory = path.dirname(require.main.filename);
 const indexPath = appDirectory + "/vs/workbench/electron-browser/bootstrap/index.html";
 
-const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)+<!-- \[End SmoothType] -->/;
+const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)*<!-- \[End SmoothType] -->/;
 const injectionTemplate =
     "$1\t<!-- [Begin SmoothType] -->" +
-    "$1\t<style>.cursor { transition: all {duration}ms; }</style>"+
+    "$1\t<style>.cursor { transition: all {duration}ms; }</style>" +
     "$1\t<!-- [End SmoothType] -->$1</head>";
 
 function reloadWindow(request = true) {
     if (request)
         vscode.window.showInformationMessage(messages.enabled, {
-            title: messages.needsRestart
+            title: "Reload Window"
         }).then(() => reloadWindow(false));
-    else vscode.commands.executeCommand("workbench.action.reloadWindow");
+    else {
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
+    }
 }
 
 function injectCursorStyle(duration) {
@@ -35,14 +36,13 @@ function injectCursorStyle(duration) {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
 
         indexHTML = indexHTML.replace(/^(\s*)<\/head>/m,
-            "\n" + injectionTemplate.replace("{duration}", duration));
+            injectionTemplate.replace("{duration}", duration));
 
-        fs.writeFileSync(indexPath, indexHTML, "urf-8");
+        fs.writeFileSync(indexPath, indexHTML, "utf-8");
 
         return true;
     } catch (error) {
         console.warn(error);
-
         return false;
     }
 }
@@ -50,79 +50,66 @@ function injectCursorStyle(duration) {
 function removeCursorStyle() {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
-
         indexHTML = indexHTML.replace(injectionPattern, "");
-
-        fs.writeFileSync(indexPath, indexHTML, "urf-8");
+        fs.writeFileSync(indexPath, indexHTML, "utf-8");
 
         return true;
     } catch (error) {
         console.warn(error);
-
         return false;
     }
 }
 
-function enableAnimation() {
+function checkEnabled() {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
-
-        if (injectionPattern.test(indexHTML)) {
-            vscode.window.showInformationMessage(messages.alreadyEnabled);
-
-            return;
-        }
+        return injectionPattern.test(indexHTML);
     } catch (error) {
         console.warn(error);
     }
-
-    let config = vscode.workspace.getConfiguration("smoothtype");
-
-    if (checkAdministrator()) {
-        let success = injectCursorStyle(config.duration);
-
-        if (success) reloadWindow(config.autoReload);
-        else vscode.window.showErrorMessage(messages.enableFailed);
-    } else vscode.window.showWarningMessage(messages.needsAdmin);
 }
 
-function disableAnimation() {
-    try {
-        let indexHTML = fs.readFileSync(indexPath, "utf-8");
-
-        if (!injectionPattern.test(indexHTML)) {
-            vscode.window.showInformationMessage(messages.alreadyDisabled);
-
-            return;
-        }
-    } catch (error) {
-        console.warn(error);
+function enableAnimation(check = true) {
+    if (check && checkEnabled()) {
+        vscode.window.showInformationMessage(messages.alreadyEnabled);
+        return;
     }
 
     let config = vscode.workspace.getConfiguration("smoothtype");
+    let success = injectCursorStyle(config.duration);
 
-    if (checkAdministrator()) {
-        let success = removeCursorStyle();
-
-        if (success) reloadWindow(config.autoReload);
-        else vscode.window.showErrorMessage(messages.disableFailed);
-    } else vscode.window.showWarningMessage(messages.needsAdmin);
+    if (success) reloadWindow(!config.autoReload);
+    else vscode.window.showErrorMessage(messages.enableFailed);
 }
 
-function reloadAnimation() {
-    disableAnimation();
-    enableAnimation();
+function disableAnimation(check = true) {
+    if (check && !checkEnabled()) {
+        vscode.window.showInformationMessage(messages.alreadyDisabled);
+        return;
+    }
+
+    let config = vscode.workspace.getConfiguration("smoothtype");
+    let success = removeCursorStyle();
+
+    if (success) reloadWindow(!config.autoReload);
+    else vscode.window.showErrorMessage(messages.disableFailed);
+}
+
+function reloadAnimation(check = false) {
+    disableAnimation(check);
+    enableAnimation(check);
 }
 
 function activate(context) {
+    process.on("uncaughtException", error => {
+        if (/ENOENT|EACCESS|EPERM/.test(error.code)) {
+            vscode.window.showInformationMessage(messages.needsAdmin);
+        }
+    });
+
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
 }
 
-function deactivate() {
-    vscode.commands.executeCommand("extension.disableAnimation");
-}
-
 exports.activate = activate;
-exports.deactivate = deactivate;
