@@ -12,6 +12,14 @@ const messages = {
     enableFailed: "Enabling Smooth Typing failed. Check the debug console for details."
 };
 
+const appDirectory = path.dirname(require.main.filename);
+const indexPath = appDirectory + "/vs/workbench/electron-browser/bootstrap/index.html";
+const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)+<!-- \[End SmoothType] -->/;
+const injectionTemplate = [
+    "\n$1\t<!-- [Begin SmoothType] -->$1\t<style>",
+    "</style>$1\t<!-- [End SmoothType] -->$1</head>"
+];
+
 function enableAnimation() {}
 function disableAnimation() { }
 function reloadAnimation() { }
