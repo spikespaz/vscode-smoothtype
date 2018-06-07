@@ -40,8 +40,23 @@ function injectCursorStyle(duration) {
 }
 
 
-function enableAnimation() { }
+function enableAnimation() {
+    let config = vscode.workspace.getConfiguration("smoothtype");
+
+    if (checkAdmin()) {
+        let success = injectCursorStyle(config.duration);
+
+        if (success && config.autoRestart)
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
+        else if (success) requestRestart();
+        else vscode.window.showErrorMessage(messages.enableFailed);
+    } else vscode.window.showWarningMessage(messages.needsAdmin);
+}
+
+
 function disableAnimation() { }
+
+
 function reloadAnimation() { }
 
 
