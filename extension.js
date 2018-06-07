@@ -29,6 +29,16 @@ const injectionTemplate =
 // Pattern to check if the code is injected.
 const injectionPattern = new RegExp("\\s*" + beginComment + "(?:.|\\s)*" + endComment);
 
+// Export the activate function to be called whenever the extension is initialized.
+exports.activate = activate;
+
+// Subscribe all of the command functions to the corresponding contributions.
+function activate(context) {
+    context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
+    context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
+    context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
+}
+
 // Function to reload the window, asks and displays a message if "message" is provided.
 function reloadWindow(message = null) {
     if (message === null || message === false)
@@ -113,13 +123,3 @@ function reloadAnimation() {
         vscode.window.showWarningMessage(messages.enableFailed);
     }
 }
-
-// Subscribe all of the command functions to the corresponding contributions.
-function activate(context) {
-    context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
-    context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
-    context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
-}
-
-// Export the activate function to be called whenever the extension is initialized.
-exports.activate = activate;
