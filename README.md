@@ -6,11 +6,9 @@ similar to MS Office and the Windows 10 Mail app.**
 [![Downloads](https://img.shields.io/vscode-marketplace/d/spikespaz.vscode-smoothtype.svg?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=spikespaz.vscode-smoothtype)
 [![Rating](https://img.shields.io/vscode-marketplace/r/spikespaz.vscode-smoothtype.svg?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=spikespaz.vscode-smoothtype)
 
-## Previews
+## Preview
 
-![Preview #1 GIF](images/preview0.gif)
-![Preview #2 GIF](images/preview1.gif)
-![Preview #3 GIF](images/preview2.gif)
+![Preview #1 GIF](images/preview.gif)
 
 ## Commands
 
