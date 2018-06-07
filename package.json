@@ -2,26 +2,43 @@
   "name": "vscode-smoothtype",
   "displayName": "SmoothType",
   "description": "Extension to modify Visual Studio Code to allow for a smooth cursor animation while typing.",
-  "version": "0.2.3",
+  "version": "0.2.4",
+  "homepage": "https://github.com/spikespaz/vscode-smoothtype",
+  "license": "MIT",
   "publisher": "spikespaz",
   "author": {
     "email": "spikespaz@outlook.com",
     "name": "Jacob Birkett (spikespaz)",
     "url": "https://spikespaz.com"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/spikespaz/vscode-smoothtype"
   },
+  "bugs": {
+    "url": "https://github.com/spikespaz/vscode-smoothtype/issues",
+    "email": "support@spikespaz.com"
+  },
   "icon": "images/icon.png",
-  "engines": {
-    "vscode": "^1.9.1"
+  "galleryBanner": {
+    "color": "#004956",
+    "theme": "dark"
   },
   "categories": [
     "Other",
     "Themes"
   ],
+  "keywords": [
+    "cursor",
+    "caret",
+    "smooth",
+    "type",
+    "theme",
+    "animation"
+  ],
+  "engines": {
+    "vscode": "^1.9.1"
+  },
   "activationEvents": [
     "*"
   ],
