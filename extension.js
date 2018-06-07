@@ -26,10 +26,10 @@ const insertTemplate =
 const removePattern = new RegExp("\\s*" + beginComment + "(?:.|\\s)*" + endComment);
 
 function reloadWindow(message = null) {
-    if (message)
+    if (message === null)
         vscode.window.showInformationMessage(message, {
             title: "Reload Window"
-        }).then(() => vscode.commands.executeCommand("workbench.action.reloadWindow"));
+        }).then(reloadWindow);
     else
         vscode.commands.executeCommand("workbench.action.reloadWindow");
 }
@@ -87,10 +87,10 @@ function enableAnimation(check = true) {
 }
 
 function disableAnimation(check = true) {
-    // if (check && !checkEnabled()) {
-    //     vscode.window.showInformationMessage(messages.alreadyDisabled);
-    //     return;
-    // }
+    if (check && !checkEnabled()) {
+        vscode.window.showInformationMessage(messages.alreadyDisabled);
+        return;
+    }
 
     let config = vscode.workspace.getConfiguration("smoothtype");
     let success = removeCursorStyle();
