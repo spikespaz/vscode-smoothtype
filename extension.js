@@ -6,10 +6,12 @@ const fs = require("fs");
 const messages = {
     enabled: "Smooth Typing has been enabled. Please restart the window.",
     disabled: "Smooth Typing has been disabled. Please restart the window.",
+    reloaded: "Smooth Typing has been reloaded. Please restart the window.",
     alreadyEnabled: "Smooth Typing is already enabled.",
     alreadyDisabled: "Smooth Typing is not enabled.",
-    enableFailed: "Enabling Smooth Typing failed. Make sure that VS Code is running as Administrator.",
-    disableFailed: "Disabling Smooth Typing failed. Make sure that VS Code is running as Administrator.",
+    enableFailed: "Failed to enable Smooth Typing. Make sure that VS Code is running as Administrator.",
+    disableFailed: "Failed to disable Smooth Typing. Make sure that VS Code is running as Administrator.",
+    reloadFailed: "Failed to reload Smooth Typing. Make sure that VS Code is running as Administrator."
 };
 
 // Paths and directoies to VS Code itself.
@@ -41,7 +43,7 @@ function activate(context) {
 
 // Function to reload the window, asks and displays a message if "message" is provided.
 function reloadWindow(message = null) {
-    if (message === null || message === false)
+    if (message === null)
         vscode.commands.executeCommand("workbench.action.reloadWindow");
     else vscode.window.showInformationMessage(message, {
         title: "Reload Window"
@@ -77,7 +79,7 @@ function checkInjection() {
 // Command to enable Smooth Typing by injecting code into the index file.
 function enableAnimation() {
     if (checkInjection()) {
-        vscode.window.showInformationMessage(messages.alreadyEnabled);
+        vscode.window.showWarningMessage(messages.alreadyEnabled);
         return;
     }
 
@@ -88,14 +90,14 @@ function enableAnimation() {
         reloadWindow(config.autoReload ? null : messages.enabled);
     } catch (error) {
         console.warn(error);
-        vscode.window.showWarningMessage(messages.enableFailed);
+        vscode.window.showErrorMessage(messages.enableFailed);
     }
 }
 
 // Command to reverse "enableAnimation".
 function disableAnimation() {
     if (!checkInjection()) {
-        vscode.window.showInformationMessage(messages.alreadyDisabled);
+        vscode.window.showWarningMessage(messages.alreadyDisabled);
         return;
     }
 
@@ -106,7 +108,7 @@ function disableAnimation() {
         reloadWindow(config.autoReload ? null : messages.disabled);
     } catch (error) {
         console.warn(error);
-        vscode.window.showWarningMessage(messages.disableFailed);
+        vscode.window.showErrorMessage(messages.disableFailed);
     }
 }
 
@@ -117,9 +119,9 @@ function reloadAnimation() {
     try {
         if (checkInjection()) removeCursorStyle();
         injectCursorStyle(config.duration);
-        reloadWindow(config.autoReload ? null : messages.enabled);
+        reloadWindow(config.autoReload ? null : messages.reloaded);
     } catch (error) {
         console.warn(error);
-        vscode.window.showWarningMessage(messages.enableFailed);
+        vscode.window.showErrorMessage(messages.reloadFailed);
     }
 }
