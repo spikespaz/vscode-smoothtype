@@ -65,8 +65,8 @@ function checkInjection() {
 }
 
 // Command to enable Smooth Typing by injecting code into the index file.
-function enableAnimation(check = true) {
-    if (check && checkInjection()) {
+function enableAnimation() {
+    if (checkInjection()) {
         vscode.window.showInformationMessage(messages.alreadyEnabled);
         return;
     }
@@ -83,8 +83,8 @@ function enableAnimation(check = true) {
 }
 
 // Command to reverse "enableAnimation".
-function disableAnimation(check = true) {
-    if (check && !checkInjection()) {
+function disableAnimation() {
+    if (!checkInjection()) {
         vscode.window.showInformationMessage(messages.alreadyDisabled);
         return;
     }
@@ -101,9 +101,17 @@ function disableAnimation(check = true) {
 }
 
 // Disable and re-enable Smooth Typing, useful for after VS Code updates.
-function reloadAnimation(check = false) {
-    disableAnimation(check);
-    enableAnimation(check);
+function reloadAnimation() {
+    let config = vscode.workspace.getConfiguration("smoothtype");
+
+    try {
+        removeCursorStyle();
+        injectCursorStyle(config.duration);
+        reloadWindow(config.autoReload ? null : messages.enabled);
+    } catch (error) {
+        console.warn(error);
+        vscode.window.showWarningMessage(messages.enableFailed);
+    }
 }
 
 // Subscribe all of the command functions to the corresponding contributions.
