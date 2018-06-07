@@ -16,7 +16,7 @@ const messages = {
 
 // Paths and directoies to VS Code itself.
 const appDirectory = path.dirname(require.main.filename);
-const indexPath = appDirectory + "/vs/workbench/electron-browser/bootstrap/index.html";
+const indexPath = path.join(appDirectory, "/vs/workbench/electron-browser/bootstrap/index.html");
 
 // Comments to indicate where the injected code begins and ends.
 const beginComment = "<!-- Begin SmoothType -->";
@@ -36,6 +36,9 @@ exports.activate = activate;
 
 // Subscribe all of the command functions to the corresponding contributions.
 function activate(context) {
+    console.log(appDirectory);
+    console.log(indexPath);
+
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
