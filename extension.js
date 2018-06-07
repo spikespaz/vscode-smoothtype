@@ -1,6 +1,6 @@
-let vscode = require("vscode");
-let fs = require("fs");
-let path = require("path");
+const vscode = require("vscode");
+const path = require("path");
+const fs = require("fs");
 
 const messages = {
     enabled: "Smooth Typing has been enabled. Please restart the window.",
@@ -15,28 +15,31 @@ const messages = {
 const appDirectory = path.dirname(require.main.filename);
 const indexPath = appDirectory + "/vs/workbench/electron-browser/bootstrap/index.html";
 
-const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)*<!-- \[End SmoothType] -->/;
-const injectionTemplate =
-    "$1\t<!-- [Begin SmoothType] -->" +
-    "$1\t<style>.cursor { transition: all {duration}ms; }</style>" +
-    "$1\t<!-- [End SmoothType] -->$1</head>";
+const beginComment = "<!-- Begin SmoothType -->";
+const endComment = "<!-- End SmoothType -->";
 
-function reloadWindow(request = true) {
-    if (request)
-        vscode.window.showInformationMessage(messages.enabled, {
+
+const insertTemplate =
+    "\n\t\t" + beginComment +
+    "\n\t\t<style>.cursor { transition: all {duration}ms }</style>" +
+    "\n\t\t" + endComment;
+const removePattern = new RegExp("\\s*" + beginComment + "(?:.|\\s)*" + endComment);
+
+function reloadWindow(message = null) {
+    if (message)
+        vscode.window.showInformationMessage(message, {
             title: "Reload Window"
-        }).then(() => reloadWindow(false));
-    else {
+        }).then(() => vscode.commands.executeCommand("workbench.action.reloadWindow"));
+    else
         vscode.commands.executeCommand("workbench.action.reloadWindow");
-    }
 }
 
 function injectCursorStyle(duration) {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
-
-        indexHTML = indexHTML.replace(/^(\s*)<\/head>/m,
-            injectionTemplate.replace("{duration}", duration));
+        indexHTML = indexHTML.replace("</head>",
+            insertTemplate.replace("{duration}", duration) + "\n\t</head>"
+        );
 
         fs.writeFileSync(indexPath, indexHTML, "utf-8");
 
@@ -50,7 +53,8 @@ function injectCursorStyle(duration) {
 function removeCursorStyle() {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
-        indexHTML = indexHTML.replace(injectionPattern, "");
+        indexHTML = indexHTML.replace(removePattern, "");
+
         fs.writeFileSync(indexPath, indexHTML, "utf-8");
 
         return true;
@@ -63,7 +67,7 @@ function removeCursorStyle() {
 function checkEnabled() {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
-        return injectionPattern.test(indexHTML);
+        return removePattern.test(indexHTML);
     } catch (error) {
         console.warn(error);
     }
@@ -78,20 +82,20 @@ function enableAnimation(check = true) {
     let config = vscode.workspace.getConfiguration("smoothtype");
     let success = injectCursorStyle(config.duration);
 
-    if (success) reloadWindow(!config.autoReload);
+    if (success) reloadWindow(config.autoReload ? null : messages.enabled);
     else vscode.window.showErrorMessage(messages.enableFailed);
 }
 
 function disableAnimation(check = true) {
-    if (check && !checkEnabled()) {
-        vscode.window.showInformationMessage(messages.alreadyDisabled);
-        return;
-    }
+    // if (check && !checkEnabled()) {
+    //     vscode.window.showInformationMessage(messages.alreadyDisabled);
+    //     return;
+    // }
 
     let config = vscode.workspace.getConfiguration("smoothtype");
     let success = removeCursorStyle();
 
-    if (success) reloadWindow(!config.autoReload);
+    if (success) reloadWindow(config.autoReload ? null : messages.enabled);
     else vscode.window.showErrorMessage(messages.disableFailed);
 }
 
