@@ -3,26 +3,36 @@
 **This extension adds a smooth typing animation,
 similar to MS Office and the Windows 10 Mail app.**
 
+[![Downloads](https://img.shields.io/vscode-marketplace/d/spikespaz.vscode-smoothtype.svg?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=spikespaz.vscode-smoothtype)
+[![Rating](https://img.shields.io/vscode-marketplace/r/spikespaz.vscode-smoothtype.svg?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=spikespaz.vscode-smoothtype)
+
+## Previews
 
 ![Preview #1 GIF](images/preview0.gif)
 ![Preview #2 GIF](images/preview1.gif)
 ![Preview #3 GIF](images/preview2.gif)
 
-(Just ignore the typo :P)
-
-### Commands
+## Commands
 
  * `Enable Smooth Typing`
  * `Disable Smooth Typing`
  * `Reload Smooth Typing`
 
-### Configuration
+## Configuration
 
-Modify the value of `smoothtype.duration` in your `settings.json`
-to adjust the duration of the transition to your preference.
+```js
+{
+  // Duration in milliseconds for the cursor to travel from one character position (or line) to the next.
+  "smoothtype.duration": 80,
+  // Ask before restarting after a command is successfully run.
+  "smoothtype.autoReload": false
+}
+```
 
-The value is in milliseconds, the default is 80.
+After changing `smoothtype.duration`, you must run `Reload Smooth Typing`.
 
-### Important
+## Important
 
 **After every update, the extension must either be reloaded or enabled again.**
+
+You also have to restart Visual Studio Code after every reload or change.
