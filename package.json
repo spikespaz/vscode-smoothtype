@@ -33,8 +33,7 @@
     "caret",
     "smooth",
     "type",
-    "theme",
-    "animation"
+    "theme"
   ],
   "engines": {
     "vscode": "^1.9.1"
