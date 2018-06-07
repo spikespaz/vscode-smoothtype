@@ -4,13 +4,13 @@ let path = require("path");
 let events = require("events");
 
 const messages = {
-    needsAdmin: "VS Code needs to be started with Administrator permissions to enable Smooth Typing.",
     enabled: "Smooth Typing has been enabled. Please restart the window.",
     disabled: "Smooth Typing has been disabled. Please restart the window.",
-    reloaded: "Smooth Typing has been enabled. Please restart the window.",
     alreadyEnabled: "Smooth Typing is already enabled.",
+    alreadyDisabled: "Smooth Typing is not enabled.",
     enableFailed: "Enabling Smooth Typing failed. Check the debug console for details.",
-    disableFailed: "Disabling Smooth Typing failed. Check the debug console for details."
+    disableFailed: "Disabling Smooth Typing failed. Check the debug console for details.",
+    needsAdmin: "VS Code needs to be started with Administrator permissions to enable Smooth Typing.",
 };
 
 const appDirectory = path.dirname(require.main.filename);
@@ -64,6 +64,18 @@ function removeCursorStyle() {
 }
 
 function enableAnimation() {
+    try {
+        let indexHTML = fs.readFileSync(indexPath, "utf-8");
+
+        if (injectionPattern.test(indexHTML)) {
+            vscode.window.showInformationMessage(messages.alreadyEnabled);
+
+            return;
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+
     let config = vscode.workspace.getConfiguration("smoothtype");
 
     if (checkAdministrator()) {
@@ -75,6 +87,18 @@ function enableAnimation() {
 }
 
 function disableAnimation() {
+    try {
+        let indexHTML = fs.readFileSync(indexPath, "utf-8");
+
+        if (!injectionPattern.test(indexHTML)) {
+            vscode.window.showInformationMessage(messages.alreadyDisabled);
+
+            return;
+        }
+    } catch (error) {
+        console.warn(error);
+    }
+
     let config = vscode.workspace.getConfiguration("smoothtype");
 
     if (checkAdministrator()) {
