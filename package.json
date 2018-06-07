@@ -25,7 +25,7 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./src/extension",
+  "main": "./extension",
   "contributes": {
     "commands": [
       {
@@ -44,13 +44,13 @@
     "configuration": {
       "title": "Smooth Type",
       "properties": {
-        "smoothtype.policy": {
-          "description": "Disable VSCode Content Policy.",
+        "smoothtype.autoReload": {
+          "description": "Ask before restarting after a command is successfully run.",
           "type": "boolean",
           "default": false
         },
         "smoothtype.duration": {
-          "description": "Durration in milliseconds for the cursor to travel from one character position (or line) to the next.",
+          "description": "Duration in milliseconds for the cursor to travel from one character position (or line) to the next.",
           "type": "number",
           "default": 80
         }
