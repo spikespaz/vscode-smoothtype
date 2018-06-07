@@ -121,6 +121,7 @@ function activate(context) {
     process.on("uncaughtException", error => {
         if (/ENOENT|EACCESS|EPERM/.test(error.code)) {
             vscode.window.showInformationMessage(messages.needsAdmin);
+            return;
         }
     });
 
