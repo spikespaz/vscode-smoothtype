@@ -21,6 +21,13 @@ const injectionTemplate =
     "$1\t<style>.cursor { transition: all {duration}ms; }</style>"+
     "$1\t<!-- [End SmoothType] -->$1</head>";
 
+function reloadWindow(request = true) {
+    if (request)
+        vscode.window.showInformationMessage(messages.enabled, {
+            title: messages.needsRestart
+        }).then(() => reloadWindow(false));
+    else vscode.commands.executeCommand("workbench.action.reloadWindow");
+}
 
 function injectCursorStyle(duration) {
     try {
@@ -39,26 +46,20 @@ function injectCursorStyle(duration) {
     }
 }
 
-
 function enableAnimation() {
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    if (checkAdmin()) {
+    if (checkAdministrator()) {
         let success = injectCursorStyle(config.duration);
 
-        if (success && config.autoRestart)
-            vscode.commands.executeCommand("workbench.action.reloadWindow");
-        else if (success) requestRestart();
+        if (success) reloadWindow(config.autoReload);
         else vscode.window.showErrorMessage(messages.enableFailed);
     } else vscode.window.showWarningMessage(messages.needsAdmin);
 }
 
-
 function disableAnimation() { }
 
-
 function reloadAnimation() { }
-
 
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
@@ -66,11 +67,9 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
 }
 
-
 function deactivate() {
     vscode.commands.executeCommand("extension.disableAnimation");
 }
-
 
 exports.activate = activate;
 exports.deactivate = deactivate;
