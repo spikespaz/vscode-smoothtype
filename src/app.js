@@ -9,7 +9,8 @@ const messages = {
     disabled: "Smooth Typing has been disabled. Please restart the window.",
     reloaded: "Smooth Typing has been enabled. Please restart the window.",
     alreadyEnabled: "Smooth Typing is already enabled.",
-    enableFailed: "Enabling Smooth Typing failed. Check the debug console for details."
+    enableFailed: "Enabling Smooth Typing failed. Check the debug console for details.",
+    disableFailed: "Disabling Smooth Typing failed. Check the debug console for details."
 };
 
 const appDirectory = path.dirname(require.main.filename);
@@ -46,6 +47,22 @@ function injectCursorStyle(duration) {
     }
 }
 
+function removeCursorStyle() {
+    try {
+        let indexHTML = fs.readFileSync(indexPath, "utf-8");
+
+        indexHTML = indexHTML.replace(injectionPattern, "");
+
+        fs.writeFileSync(indexPath, indexHTML, "urf-8");
+
+        return true;
+    } catch (error) {
+        console.warn(error);
+
+        return false;
+    }
+}
+
 function enableAnimation() {
     let config = vscode.workspace.getConfiguration("smoothtype");
 
@@ -57,9 +74,21 @@ function enableAnimation() {
     } else vscode.window.showWarningMessage(messages.needsAdmin);
 }
 
-function disableAnimation() { }
+function disableAnimation() {
+    let config = vscode.workspace.getConfiguration("smoothtype");
 
-function reloadAnimation() { }
+    if (checkAdministrator()) {
+        let success = removeCursorStyle();
+
+        if (success) reloadWindow(config.autoReload);
+        else vscode.window.showErrorMessage(messages.disableFailed);
+    } else vscode.window.showWarningMessage(messages.needsAdmin);
+}
+
+function reloadAnimation() {
+    disableAnimation();
+    enableAnimation();
+}
 
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
