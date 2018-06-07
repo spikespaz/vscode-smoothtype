@@ -73,7 +73,7 @@ function removeCursorStyle() {
 }
 
 // Checks if the "injectionPattern" is present in the index file.
-function checkEnabled() {
+function checkInjection() {
     try {
         let indexHTML = fs.readFileSync(indexPath, "utf-8");
         return injectionPattern.test(indexHTML);
@@ -84,7 +84,7 @@ function checkEnabled() {
 
 // Command to enable Smooth Typing by injecting code into the index file.
 function enableAnimation(check = true) {
-    if (check && checkEnabled()) {
+    if (check && checkInjection()) {
         vscode.window.showInformationMessage(messages.alreadyEnabled);
         return;
     }
@@ -98,7 +98,7 @@ function enableAnimation(check = true) {
 
 // Command to reverse "enableAnimation".
 function disableAnimation(check = true) {
-    if (check && !checkEnabled()) {
+    if (check && !checkInjection()) {
         vscode.window.showInformationMessage(messages.alreadyDisabled);
         return;
     }
@@ -106,7 +106,7 @@ function disableAnimation(check = true) {
     let config = vscode.workspace.getConfiguration("smoothtype");
     let success = removeCursorStyle();
 
-    if (success) reloadWindow(config.autoReload ? null : messages.enabled);
+    if (success) reloadWindow(config.autoReload ? null : messages.disabled);
     else vscode.window.showErrorMessage(messages.disableFailed);
 }
 
