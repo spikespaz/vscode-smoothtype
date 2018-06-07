@@ -14,13 +14,33 @@ const messages = {
 
 const appDirectory = path.dirname(require.main.filename);
 const indexPath = appDirectory + "/vs/workbench/electron-browser/bootstrap/index.html";
-const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)+<!-- \[End SmoothType] -->/;
-const injectionTemplate = [
-    "\n$1\t<!-- [Begin SmoothType] -->$1\t<style>",
-    "</style>$1\t<!-- [End SmoothType] -->$1</head>"
-];
 
-function enableAnimation() {}
+const injectionPattern = /\s*<!-- \[Begin SmoothType] -->(?:.|\s)+<!-- \[End SmoothType] -->/;
+const injectionTemplate =
+    "$1\t<!-- [Begin SmoothType] -->" +
+    "$1\t<style>.cursor { transition: all {duration}ms; }</style>"+
+    "$1\t<!-- [End SmoothType] -->$1</head>";
+
+
+function injectCursorStyle(duration) {
+    try {
+        let indexHTML = fs.readFileSync(indexPath, "utf-8");
+
+        indexHTML = indexHTML.replace(/^(\s*)<\/head>/m,
+            "\n" + injectionTemplate.replace("{duration}", duration));
+
+        fs.writeFileSync(indexPath, indexHTML, "urf-8");
+
+        return true;
+    } catch (error) {
+        console.warn(error);
+
+        return false;
+    }
+}
+
+
+function enableAnimation() { }
 function disableAnimation() { }
 function reloadAnimation() { }
 
