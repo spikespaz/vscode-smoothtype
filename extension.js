@@ -115,7 +115,7 @@ function reloadAnimation() {
     let config = vscode.workspace.getConfiguration("smoothtype");
 
     try {
-        removeCursorStyle();
+        if (checkInjection()) removeCursorStyle();
         injectCursorStyle(config.duration);
         reloadWindow(config.autoReload ? null : messages.enabled);
     } catch (error) {
