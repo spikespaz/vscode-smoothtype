@@ -8,6 +8,8 @@ similar to MS Office and the Windows 10 Mail app.**
 
 **Get it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=spikespaz.vscode-smoothtype).**
 
+**Note:** Please scroll down and read the section labeled [Important](#important).
+
 ## Preview
 
 ![Preview #1 GIF](images/preview.gif)
