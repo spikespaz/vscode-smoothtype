@@ -51,35 +51,67 @@ function activate(context) {
 
 
 function enableAnimation() {
-    let config = vscode.workspace.getConfiguration("smoothtype");
+    if (!checkInjection()) {
+        let config = vscode.workspace.getConfiguration("smoothtype");
 
-    injectCursorStyle(config.duration).then(() => {
-        if (config.autoReload) reloadWindow();
-        else reloadWindow(messages.enabled);
-    }, (reason) => {
-        vscode.window.showWarningMessage(messages.enableFailed);
-        console.error(messages.enableFailed, "\n", reason);
-    });
+        injectCursorStyle(config.duration).then(() => {
+            if (config.autoReload) reloadWindow();
+            else reloadWindow(messages.enabled);
+        }, (reason) => {
+            vscode.window.showWarningMessage(messages.enableFailed);
+            console.error(messages.enableFailed, "\n", reason);
+        });
+    } else {
+        vscode.window.showInformationMessage(messages.alreadyEnabled);
+        console.info(messages.alreadyEnabled);
+    }
 }
 
 
 function disableAnimation() {
+    if (checkInjection()) {
+        let config = vscode.workspace.getConfiguration("smoothtype");
+
+        removeCursorStyle().then(() => {
+            if (config.autoReload) reloadWindow();
+            else reloadWindow(messages.disabled);
+        }, (reason) => {
+            vscode.window.showWarningMessage(messages.disableFailed);
+            console.error(messages.disableFailed, "\n", reason);
+        });
+    } else {
+        vscode.window.showInformationMessage(messages.alreadyDisabled);
+        console.info(messages.alreadyDisabled);
+    }
+}
+
+
+function reloadAnimation() {
+    if (checkInjection())
+        removeCursorStyle().then(reloadInjection, (reason) => {
+            vscode.window.showWarningMessage(messages.reloadFailed);
+            console.error(messages.reloadFailed, "\n", reason);
+        });
+    else reloadInjection();
+}
+
+
+function reloadInjection() {
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    removeCursorStyle().then(() => {
+    injectCursorStyle(config.duration).then(() => {
         if (config.autoReload) reloadWindow();
-        else reloadWindow(messages.disabled);
+        else reloadWindow(messages.reloaded);
     }, (reason) => {
-        vscode.window.showWarningMessage(messages.disableFailed);
-        console.error(messages.disableFailed, "\n", reason);
+        vscode.window.showWarningMessage(messages.reloadFailed);
+        console.error(messages.reloadFailed, "\n", reason);
     });
 }
 
 
-function reloadAnimation() { }
-
-
 function injectCursorStyle(duration) {
+    console.info("Injecting cursor styles.");
+
     return new Promise((resolve, reject) => {
         fs.readFile(indexPath, "utf-8", (error, html) => {
             if (error) reject(error);
@@ -97,6 +129,8 @@ function injectCursorStyle(duration) {
 
 
 function removeCursorStyle() {
+    console.info("Removing cursor styles.");
+
     return new Promise((resolve, reject) => {
         fs.readFile(indexPath, "utf-8", (error, html) => {
             if (error) reject(error);
@@ -112,7 +146,21 @@ function removeCursorStyle() {
 }
 
 
+function checkInjection() {
+    console.info("Check if cursor styles are injected.");
+
+    let indexHTML = fs.readFileSync(indexPath, "utf-8");
+    let injected = injectionPattern.test(indexHTML);
+
+    console.info(injected ? "Cursor styles are present." : "Cursor styles are missing.");
+
+    return injected;
+}
+
+
 function writeFileAdmin(filePath, writeString, encoding = "utf-8", promptName = "File Writer") {
+    console.info("Writing file with administrator priveleges.");
+
     return new Promise((resolve, reject) => {
         tmp.file((error, tempFilePath) => {
             if (error) reject(error);
