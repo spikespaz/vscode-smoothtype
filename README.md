@@ -45,6 +45,10 @@ After changing `smoothtype.duration`, you must run `Reload Smooth Typing`.
 
 ## Important
 
+Because Visual Studio Code does not have an API for modifying the editor CSS, this extension modifies the core index file that is loaded by the Electron browser. After enabling Smooth Typing, the editor may complain that it is coppupt, and ask you to reinstall. This is perfectly normal, and perfectly safe. Just click the cog on the top of the notification and elect to not be shown this message again.
+
+The editor may also append `[Unsupported]` to the end of the window title. This is also fine.
+
 **After every update, the extension must either be reloaded or enabled again.**
 
 You also have to restart Visual Studio Code after every reload or change.
