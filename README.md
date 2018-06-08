@@ -20,18 +20,6 @@ similar to MS Office and the Windows 10 Mail app.**
  * `Disable Smooth Typing`
  * `Reload Smooth Typing`
 
-If you're on linux, you will need to run VS Code as superuser.
-
-To do this, use the following command (replacing `<username>` with your user home folder):
-
-```bash
-sudo code --user-data-dir=/home/<username>/.config/Code
-```
-
-On Windows, you can easily just right-click the VS Code launch icon or executable and select "Run as Administrator".
-
-After starting the program with elevated priveleges, run the `Enable Smooth Typing` command from the Command Pallete.
-
 ## Configuration
 
 ```js
