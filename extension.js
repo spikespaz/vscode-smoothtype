@@ -11,9 +11,9 @@ const messages = {
     reloaded: "Smooth Typing has been reloaded. Please restart the window.",
     alreadyEnabled: "Smooth Typing is already enabled.",
     alreadyDisabled: "Smooth Typing is not enabled.",
-    enableFailed: "Failed to enable Smooth Typing. Make sure that VS Code is running as Administrator.",
-    disableFailed: "Failed to disable Smooth Typing. Make sure that VS Code is running as Administrator.",
-    reloadFailed: "Failed to reload Smooth Typing. Make sure that VS Code is running as Administrator."
+    enableFailed: "Failed to enable Smooth Typing.",
+    disableFailed: "Failed to disable Smooth Typing.",
+    reloadFailed: "Failed to reload Smooth Typing."
 };
 
 // Paths and directoies to VS Code itself.
@@ -87,7 +87,7 @@ function injectCursorStyle(duration) {
         injectionTemplate.replace("{duration}", duration) + "\n\t</head>"
     );
 
-    fs.writeFileSync(indexPath, indexHTML, "utf-8");
+    return writeFileAdmin(indexPath, indexHTML);
 }
 
 // Uses "injectionPattern" to remove the injected template from the index file.
@@ -97,7 +97,7 @@ function removeCursorStyle() {
     let indexHTML = fs.readFileSync(indexPath, "utf-8");
     indexHTML = indexHTML.replace(injectionPattern, "");
 
-    fs.writeFileSync(indexPath, indexHTML, "utf-8");
+    return writeFileAdmin(indexPath, indexHTML);
 }
 
 // Checks if the "injectionPattern" is present in the index file.
@@ -121,11 +121,11 @@ function enableAnimation() {
 
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    try {
-        injectCursorStyle(config.duration);
+    if (injectCursorStyle()) {
+        console.info(messages.enabled);
         reloadWindow(config.autoReload ? null : messages.enabled);
-    } catch (error) {
-        console.warn(error);
+    } else {
+        console.error(messages.enableFailed);
         vscode.window.showErrorMessage(messages.enableFailed);
     }
 }
@@ -143,11 +143,11 @@ function disableAnimation() {
 
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    try {
-        removeCursorStyle();
+    if (removeCursorStyle()) {
+        console.info(messages.disabled);
         reloadWindow(config.autoReload ? null : messages.disabled);
-    } catch (error) {
-        console.warn(error);
+    } else {
+        console.error(messages.disableFailed);
         vscode.window.showErrorMessage(messages.disableFailed);
     }
 }
@@ -158,12 +158,21 @@ function reloadAnimation() {
 
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    try {
-        if (checkInjection()) removeCursorStyle();
-        injectCursorStyle(config.duration);
+    if (checkInjection())
+        if (!removeCursorStyle()) {
+            console.error(messages.reloadFailed);
+            vscode.window.showErrorMessage(messages.reloadFailed);
+
+            return;
+        }
+
+
+    if (injectCursorStyle(config.duration)) {
+        console.info(messages.reloaded);
         reloadWindow(config.autoReload ? null : messages.reloaded);
-    } catch (error) {
-        console.warn(error);
+    } else {
+        console.error(messages.reloadFailed);
         vscode.window.showErrorMessage(messages.reloadFailed);
     }
+
 }
