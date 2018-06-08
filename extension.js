@@ -1,5 +1,7 @@
 const vscode = require("vscode");
+const sudo = require("sudo-prompt");
 const path = require("path");
+const tmp = require("tmp");
 const fs = require("fs");
 
 // Predefined to be used for errors and information.
@@ -42,6 +44,21 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
+}
+
+// Writes text to a file, after requesting elevated permissions.
+function writeFileAdministrator(filePath, writeString, callback) {
+    tmp.file((error, tempFilePath) => {
+        if (error) {
+            callback(error);
+            return;
+        }
+
+        fs.writeFileSync(tempFilePath, writeString, "utf-8");
+
+        sudo.exec(process.platform === "win32" ? "copy " : "cp " +
+            tempFilePath + " " + filePath, { name: "Visual Studio Code" }, callback);
+    });
 }
 
 // Function to reload the window, asks and displays a message if "message" is provided.
