@@ -46,19 +46,19 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("extension.reloadAnimation", reloadAnimation));
 }
 
-// Writes text to a file, after requesting elevated permissions.
-function writeFileAdministrator(filePath, writeString, callback) {
-    tmp.file((error, tempFilePath) => {
-        if (error) {
-            callback(error);
-            return;
-        }
+// Writes text to a file, after requesting elevated permissions, and return success.
+function writeFileAdmin(filePath, writeString) {
+    let tempFilePath = tmp.fileSync().name;
 
-        fs.writeFileSync(tempFilePath, writeString, "utf-8");
+    fs.writeFileSync(tempFilePath, writeString, "utf-8");
 
-        sudo.exec(process.platform === "win32" ? "copy " : "cp " +
-            tempFilePath + " " + filePath, { name: "Visual Studio Code" }, callback);
-    });
+    sudo.exec(process.platform === "win32" ? "copy " : "cp " +
+        tempFilePath + " " + filePath, { name: "Visual Studio Code" }
+    );
+
+    if (fs.readFileSync(filePath, "utf-8") === writeString)
+        return true;
+    else return false;
 }
 
 // Function to reload the window, asks and displays a message if "message" is provided.
