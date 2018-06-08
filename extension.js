@@ -7,11 +7,11 @@ const fs = require("fs");
 
 // Predefined to be used for errors and information.
 const messages = {
-    enabled: "Smooth Typing has been enabled. Please restart the window.",
-    disabled: "Smooth Typing has been disabled. Please restart the window.",
-    reloaded: "Smooth Typing has been reloaded. Please restart the window.",
-    alreadyEnabled: "Smooth Typing is already enabled.",
-    alreadyDisabled: "Smooth Typing is not enabled.",
+    enableSuccess: "Smooth Typing has been enabled. Please restart the window.",
+    disableSuccess: "Smooth Typing has been disabled. Please restart the window.",
+    reloadSuccess: "Smooth Typing has been reloaded. Please restart the window.",
+    enabledAlready: "Smooth Typing is already enabled.",
+    disabledAlready: "Smooth Typing is not enabled.",
     enableFailed: "Failed to enable Smooth Typing.",
     disableFailed: "Failed to disable Smooth Typing.",
     reloadFailed: "Failed to reload Smooth Typing."
@@ -56,14 +56,14 @@ function enableAnimation() {
 
         injectCursorStyle(config.duration).then(() => {
             if (config.autoReload) reloadWindow();
-            else reloadWindow(messages.enabled);
+            else reloadWindow(messages.enableSuccess);
         }, (reason) => {
             vscode.window.showWarningMessage(messages.enableFailed);
             console.error(messages.enableFailed, "\n", reason);
         });
     } else {
-        vscode.window.showInformationMessage(messages.alreadyEnabled);
-        console.info(messages.alreadyEnabled);
+        vscode.window.showInformationMessage(messages.enabledAlready);
+        console.info(messages.enabledAlready);
     }
 }
 
@@ -74,40 +74,29 @@ function disableAnimation() {
 
         removeCursorStyle().then(() => {
             if (config.autoReload) reloadWindow();
-            else reloadWindow(messages.disabled);
+            else reloadWindow(messages.disableSuccess);
         }, (reason) => {
             vscode.window.showWarningMessage(messages.disableFailed);
             console.error(messages.disableFailed, "\n", reason);
         });
     } else {
-        vscode.window.showInformationMessage(messages.alreadyDisabled);
-        console.info(messages.alreadyDisabled);
+        vscode.window.showInformationMessage(messages.disabledAlready);
+        console.info(messages.disabledAlready);
     }
 }
 
 
 function reloadAnimation() {
-    if (checkInjection())
-        removeCursorStyle().then(reloadInjection, (reason) => {
-            vscode.window.showWarningMessage(messages.reloadFailed);
-            console.error(messages.reloadFailed, "\n", reason);
-        });
-    else reloadInjection();
-}
-
-
-function reloadInjection() {
     let config = vscode.workspace.getConfiguration("smoothtype");
 
-    injectCursorStyle(config.duration).then(() => {
+    reloadCursorStyle(config.duration).then(() => {
         if (config.autoReload) reloadWindow();
-        else reloadWindow(messages.reloaded);
+        else reloadWindow(messages.reloadSuccess);
     }, (reason) => {
         vscode.window.showWarningMessage(messages.reloadFailed);
         console.error(messages.reloadFailed, "\n", reason);
     });
 }
-
 
 function injectCursorStyle(duration) {
     console.info("Injecting cursor styles.");
@@ -141,6 +130,27 @@ function removeCursorStyle() {
                     indexPath, html, "utf-8", "Visual Studio Code"
                 ).then(resolve, reject);
             }
+        });
+    });
+}
+
+
+function reloadCursorStyle(duration) {
+    console.info("Reloading cursor styles.");
+
+    return new Promise((resolve, reject) => {
+        fs.readFile(indexPath, "utf-8", (error, html) => {
+            if (error) reject(error);
+
+            if (checkInjection())
+                html = html.replace(injectionPattern, "");
+
+            html = html.replace("</head>",
+                injectionTemplate.replace("{duration}", duration) + "\n\t</head>");
+
+            writeFileAdmin(
+                indexPath, html, "utf-8", "Visual Studio Code"
+            ).then(resolve, reject);
         });
     });
 }
