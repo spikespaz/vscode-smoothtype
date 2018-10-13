@@ -20,20 +20,20 @@ const messages = {
 
 // Paths and directoies to VS Code itself.
 const appDirectory = path.dirname(require.main.filename);
-const indexPath = path.join(appDirectory, "/vs/workbench/electron-browser/bootstrap/index.html");
+const cssPath = path.join(appDirectory, "/vs/workbench/workbench.main.css");
 
 // Comments to indicate where the injected code begins and ends.
-const beginComment = "<!-- Begin SmoothType -->";
-const endComment = "<!-- End SmoothType -->";
+const beginComment = "/* Begin SmoothType */";
+const endComment = "/* End SmoothType */";
 
 // Template for the injected code. "{duration}" is replaced with the user preference.
 const injectionTemplate =
-    "\n\t\t" + beginComment +
-    "\n\t\t<style>.cursor { transition: all {duration}ms }</style>" +
-    "\n\t\t" + endComment;
+    "\n" + beginComment +
+    "\n.cursor { transition: all {duration}ms }" +
+    "\n" + endComment;
 
 // Pattern to check if the code is injected.
-const injectionPattern = new RegExp("\\s*" + beginComment + "(?:.|\\s)*" + endComment);
+const injectionPattern = new RegExp("\\s*" + escapeRegExp(beginComment) + "(?:.|\\s)*" + escapeRegExp(endComment));
 
 
 // Export the activate function to be called whenever the extension is initialized.
@@ -42,7 +42,7 @@ exports.activate = activate;
 // Subscribe all of the command functions to the corresponding contributions.
 function activate(context) {
     console.info("Application Directory: ", appDirectory);
-    console.info("Application Index: ", indexPath);
+    console.info("Application Main CSS: ", cssPath);
 
     context.subscriptions.push(vscode.commands.registerCommand("extension.enableAnimation", enableAnimation));
     context.subscriptions.push(vscode.commands.registerCommand("extension.disableAnimation", disableAnimation));
@@ -102,14 +102,13 @@ function injectCursorStyle(duration) {
     console.info("Injecting cursor styles.");
 
     return new Promise((resolve, reject) => {
-        fs.readFile(indexPath, "utf-8", (error, html) => {
+        fs.readFile(cssPath, "utf-8", (error, css) => {
             if (error) reject(error);
             else {
-                html = html.replace("</head>",
-                    injectionTemplate.replace("{duration}", duration) + "\n\t</head>");
+                css += injectionTemplate.replace("{duration}", duration);
 
                 writeFileAdmin(
-                    indexPath, html, "utf-8", "Visual Studio Code"
+                    cssPath, css, "utf-8", "Visual Studio Code"
                 ).then(resolve, reject);
             }
         });
@@ -121,13 +120,13 @@ function removeCursorStyle() {
     console.info("Removing cursor styles.");
 
     return new Promise((resolve, reject) => {
-        fs.readFile(indexPath, "utf-8", (error, html) => {
+        fs.readFile(cssPath, "utf-8", (error, css) => {
             if (error) reject(error);
             else {
-                html = html.replace(injectionPattern, "");
+                css = css.replace(injectionPattern, "");
 
                 writeFileAdmin(
-                    indexPath, html, "utf-8", "Visual Studio Code"
+                    cssPath, css, "utf-8", "Visual Studio Code"
                 ).then(resolve, reject);
             }
         });
@@ -139,17 +138,17 @@ function reloadCursorStyle(duration) {
     console.info("Reloading cursor styles.");
 
     return new Promise((resolve, reject) => {
-        fs.readFile(indexPath, "utf-8", (error, html) => {
+        fs.readFile(cssPath, "utf-8", (error, css) => {
             if (error) reject(error);
 
             if (checkInjection())
-                html = html.replace(injectionPattern, "");
+                css = css.replace(injectionPattern, "");
 
-            html = html.replace("</head>",
+            css = css.replace("</head>",
                 injectionTemplate.replace("{duration}", duration) + "\n\t</head>");
 
             writeFileAdmin(
-                indexPath, html, "utf-8", "Visual Studio Code"
+                cssPath, css, "utf-8", "Visual Studio Code"
             ).then(resolve, reject);
         });
     });
@@ -159,8 +158,8 @@ function reloadCursorStyle(duration) {
 function checkInjection() {
     console.info("Check if cursor styles are injected.");
 
-    let indexHTML = fs.readFileSync(indexPath, "utf-8");
-    let injected = injectionPattern.test(indexHTML);
+    let mainCSS = fs.readFileSync(cssPath, "utf-8");
+    let injected = injectionPattern.test(mainCSS);
 
     console.info(injected ? "Cursor styles are present." : "Cursor styles are missing.");
 
@@ -205,4 +204,10 @@ function reloadWindow(message) {
             if (clicked) reloadWindow();
         });
     }
+}
+
+
+// https://stackoverflow.com/a/6969486/2512078
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
