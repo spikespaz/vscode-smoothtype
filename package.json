@@ -46,15 +46,15 @@
     "commands": [
       {
         "command": "extension.enableAnimation",
-        "title": "Enable Smooth Typing"
+        "title": "SmoothType: Enable Animation"
       },
       {
         "command": "extension.disableAnimation",
-        "title": "Disable Smooth Typing"
+        "title": "SmoothType: Disable Animation"
       },
       {
         "command": "extension.reloadAnimation",
-        "title": "Reload Smooth Typing"
+        "title": "SmoothType: Reload Animation"
       }
     ],
     "configuration": {
