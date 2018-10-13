@@ -105,7 +105,7 @@ function injectCursorStyle(duration) {
         fs.readFile(cssPath, "utf-8", (error, css) => {
             if (error) reject(error);
             else {
-                css += injectionTemplate.replace("{duration}", duration);
+                css += "\n" + injectionTemplate.replace("{duration}", duration);
 
                 writeFileAdmin(
                     cssPath, css, "utf-8", "Visual Studio Code"
@@ -144,8 +144,7 @@ function reloadCursorStyle(duration) {
             if (checkInjection())
                 css = css.replace(injectionPattern, "");
 
-            css = css.replace("</head>",
-                injectionTemplate.replace("{duration}", duration) + "\n\t</head>");
+            css += "\n" + injectionTemplate.replace("{duration}", duration);
 
             writeFileAdmin(
                 cssPath, css, "utf-8", "Visual Studio Code"
