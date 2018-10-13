@@ -16,9 +16,9 @@ similar to MS Office and the Windows 10 Mail app.**
 
 ## Commands
 
- * `Enable Smooth Typing`
- * `Disable Smooth Typing`
- * `Reload Smooth Typing`
+ * `SmoothType: Enable Animation`
+ * `SmoothType: Disable Animation`
+ * `SmoothType: Reload Animation`
 
 ## Configuration
 
@@ -31,7 +31,7 @@ similar to MS Office and the Windows 10 Mail app.**
 }
 ```
 
-After changing `smoothtype.duration`, you must run `Reload Smooth Typing`.
+After changing `smoothtype.duration`, you must run `SmoothType: Enable Animation`.
 
 ## Important
 
