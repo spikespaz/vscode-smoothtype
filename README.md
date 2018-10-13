@@ -39,6 +39,28 @@ Because Visual Studio Code does not have an API for modifying the editor CSS, th
 
 The editor may also append `[Unsupported]` to the end of the window title. This is also fine.
 
+If you would like to remove `[Unsupported]` from the title bar, I would recommend Jürg Lehni's [Fix VSCode Checksums](https://marketplace.visualstudio.com/items?itemName=lehni.vscode-fix-checksums) extension.
+
+In the future I may implement the same functionality as that extension into SmoothType itself.
+
+**If you're on Linux where it is problematic to run VS Code as superuser, I have [forked the extension](https://github.com/spikespaz-forks/vscode-fix-checksums) to fix this issue. My pull request remains unmerged, but the functionality is improved.**
+
+It isn't on the Marketplace, but to use this extension just run the following commands.
+
+```
+$ cd ~
+$ git clone https://github.com/spikespaz-forks/vscode-fix-checksums
+$ cd vscode-fix-checksums/
+$ npm install
+$ npm install -g vsce
+$ vsce package
+$ code --install-extension vscode-fix-checksums-1.1.0.vsix
+```
+
+The last command may have a different filename, but there will be only one VSIX package in the directory.
+
+After running those commands, run `Reload Window` and `Fix Checksums: Apply` in VS Code.
+
 **After every update, the extension must either be reloaded or enabled again.**
 
 You also have to restart Visual Studio Code after every reload or change.
