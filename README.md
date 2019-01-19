@@ -10,6 +10,12 @@ similar to MS Office and the Windows 10 Mail app.**
 
 **Note:** Please scroll down and read the section labeled [Important](#important).
 
+---
+
+**If you find this software useful and would like to show your appreciation, please consider making a small donation!**
+
+[![Donate](https://spikespaz.com/assets/donate_button_1x.png)](https://spikespaz.com/donate)
+
 ## Preview
 
 ![Preview #1 GIF](images/preview.gif)
@@ -64,13 +70,3 @@ After running those commands, run `Reload Window` and `Fix Checksums: Apply` in 
 **After every update, the extension must either be reloaded or enabled again.**
 
 You also have to restart Visual Studio Code after every reload or change.
-
-## Donations
-
-If you would like to show appreciation for my work, I would gladly accept a small donation!
-
-I will accept donations through PayPal.Me, Buy Me a Coffee, or Patreon.
-
-[![Buy Me a Coffee](https://i.imgur.com/fN422E7.png)](https://buymeacoffee.com/spikespaz)
-[![PayPal.Me](https://i.imgur.com/JWkunGi.png)](https://paypal.me/spikespaz)
-[![Patreon](https://i.imgur.com/K05b2RO.png)](https://patreon.com/spikespaz)
