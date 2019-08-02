@@ -26,6 +26,12 @@ similar to MS Office and the Windows 10 Mail app.**
  * `SmoothType: Disable Animation`
  * `SmoothType: Reload Animation`
 
+## Uninstalling
+
+When you uninstall the extension, you must run the `SmoothType: Disable Animation` command from the command palette (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>) to revert changes in VS Code first.
+
+Additionally, if you're using the extension for fixing VS Code's title bar as mentioned in the [Important](#important) section, you must also run `Fix Checksums: Restore` after `SmoothType: Disable Animation` and before uninstalling either extension.
+
 ## Configuration
 
 ```js
