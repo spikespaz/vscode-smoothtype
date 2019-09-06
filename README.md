@@ -1,5 +1,12 @@
 # SmoothType for Visual Studio Code
 
+> ## DEPRECATION NOTICE
+> For all intents and purposes, this project is deprecated and archived. There will be no further development, and support is not guaranteed.
+>
+> Please use the new `editor.cursorSmoothCaretAnimation` option in your user settings; the primary and only feature of this extension has been cored. The only thing that VSC cannot do is change the animation duration, this extension can.
+
+---
+
 **This extension adds a smooth typing animation,
 similar to MS Office and the Windows 10 Mail app.**
 
@@ -14,7 +21,11 @@ similar to MS Office and the Windows 10 Mail app.**
 
 **If you find this software useful and would like to show your appreciation, please consider making a small donation!**
 
-[![Donate](https://spikespaz.com/assets/donate_button_1x.png)](https://spikespaz.com/donate)
+<h1>
+  <a href="https://spikespaz.com/donate">
+    <img src="https://spikespaz.com/images/donate/donate.svg" alt="Donate!" width="200"\>
+  </a>
+</h1>
 
 ## Preview
 
